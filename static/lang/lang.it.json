@@ -1,0 +1,40 @@
+{
+    "title": "Hai bisogno di aiuto?",
+    "subtitle": "Risposte rapide per gli ospiti della struttura",
+    "label": "Hai altre domande? Falle Qui!",
+    "placeholder": "Scrivi qui la tua domanda",
+    "send": "Invia",
+    "faq": "Domande recenti",
+    "clear": "Cancella cronologia",
+    "answer": "Risposta",
+    "spinner": "Sto cercando la risposta...",
+    "fallback": "Non sono in grado di rispondere a questa domanda in base alle informazioni disponibili.",
+    "contact": "Contattaci per assistenza",
+    "imageAnalysisTitle": "Analisi Immagini",
+    "imageAnalysisSubtitle": "Carica un'immagine per ottenere una descrizione dettagliata",
+    "selectImage": "Seleziona un'immagine",
+    "promptLabel": "Prompt (opzionale)",
+    "promptPlaceholder": "Cosa vuoi sapere dell'immagine?",
+    "analyzeButton": "Analizza Immagine",
+    "result": "Risultato",
+    "analyzing": "Analisi in corso...",
+    "imageAnalysisLink": "Analisi Immagini",
+    "faqQuick": [
+        {
+            "label": "🔑 Come apro la porta?",
+            "query": "Come apro la porta?"
+        },
+        {
+            "label": "🚗 Come alzo la sbarra?",
+            "query": "Come alzo la sbarra?"
+        },
+        {
+            "label": "❄️ Come si accende l'aria condizionata?",
+            "query": "Come si accende l'aria condizionata?"
+        },
+        {
+            "label": "📤 Come fare il check-out?",
+            "query": "Come fare il check-out?"
+        }
+    ]
+}

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Chunk indicizzati</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 text-gray-800">
+  <div class="max-w-5xl mx-auto py-8 px-4">
+    <h1 class="text-2xl font-bold mb-6">📑 Chunk indicizzati</h1>
+    <p class="mb-4 text-sm text-gray-600">Fonte e anteprima dei contenuti attualmente indicizzati nel sistema.</p>
+
+    <div class="overflow-x-auto">
+      <table class="min-w-full bg-white shadow-md rounded border">
+        <thead class="bg-gray-200 text-sm">
+          <tr>
+            <th class="py-2 px-4 text-left">🔢 #</th>
+            <th class="py-2 px-4 text-left">📁 Fonte</th>
+            <th class="py-2 px-4 text-left">🔍 Anteprima</th>
+            <th class="py-2 px-4 text-left">🔠 Caratteri</th>
+            <th class="py-2 px-4 text-left">📝 Descrizione</th>
+            <th class="py-2 px-4 text-left">🏷️ Tag</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in chunks %}
+          <tr class="border-t">
+            <td class="py-2 px-4 align-top text-sm">{{ loop.index }}</td>
+            <td class="py-2 px-4 align-top text-sm">{{ c.source }}</td>
+            <td class="py-2 px-4 align-top text-sm">
+              <div class="text-gray-700 max-w-prose">
+                {{ c.text[:300].replace('\n', ' ') }}{% if c.text|length > 300 %}...{% endif %}
+              </div>
+            </td>
+            <td class="py-2 px-4 align-top text-sm">{{ c.text|length }}</td>
+            <td class="py-2 px-4 align-top text-sm">{{ c.description or '' }}</td>
+            <td class="py-2 px-4 align-top text-sm">{% if c.tags %}{{ c.tags|join(', ') }}{% endif %}</td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="6" class="text-center py-6 text-gray-500">Nessun chunk disponibile.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+
+</html>

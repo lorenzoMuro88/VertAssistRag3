@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#1976d2" />
+  <title>Registrazione - RAG Assistant</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .mat-input {
+      border: none;
+      border-bottom: 2px solid #cfd8dc;
+      background-color: transparent;
+      color: #1e293b;
+      transition: border-color 0.2s;
+    }
+    .mat-input:focus {
+      border-bottom-color: #1976d2;
+      outline: none;
+    }
+    .dark .mat-input {
+      color: #f8fafc;
+      border-bottom-color: #475569;
+    }
+    .dark .mat-input:focus {
+      border-bottom-color: #90caf9;
+    }
+  </style>
+</head>
+<body class="bg-background dark:bg-darkbg min-h-screen text-gray-900 dark:text-gray-100 antialiased flex items-center justify-center px-4">
+  <main class="bg-white dark:bg-gray-900 shadow-mat-elevation rounded-lg w-full max-w-md p-8">
+    <h1 class="text-2xl font-bold mb-6 text-center">Registrazione</h1>
+    <form method="POST" class="space-y-6">
+      <input name="username" type="text" placeholder="Username" required class="mat-input w-full py-3 text-base" />
+      <input name="password" type="password" placeholder="Password" required class="mat-input w-full py-3 text-base" />
+      <input name="confirm_password" type="password" placeholder="Conferma password" required class="mat-input w-full py-3 text-base" />
+      <button type="submit" class="mat-btn w-full py-2">Registrati</button>
+    </form>
+    <p class="mt-4 text-sm text-center">
+      Hai già un account?
+      <a href="/login" class="text-primary hover:underline">Accedi</a>
+    </p>
+  </main>
+</body>
+</html>

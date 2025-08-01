@@ -1,0 +1,40 @@
+{
+    "title": "Besoin d'aide ?",
+    "subtitle": "Réponses rapides pour les clients de l'hôtel",
+    "label": "Vous avez d'autres questions ? Posez-les ici !",
+    "placeholder": "Écrivez votre question ici",
+    "send": "Envoyer",
+    "faq": "Questions récentes",
+    "clear": "Effacer l'historique",
+    "answer": "Réponse",
+    "spinner": "Recherche de la réponse...",
+    "fallback": "Je ne suis pas en mesure de répondre à cette question sur la base des informations disponibles.",
+    "contact": "Contactez-nous pour obtenir de l'aide",
+    "imageAnalysisTitle": "Analyse d'Image",
+    "imageAnalysisSubtitle": "Téléchargez une image pour obtenir une description détaillée",
+    "selectImage": "Sélectionnez une image",
+    "promptLabel": "Prompt (optionnel)",
+    "promptPlaceholder": "Que souhaitez-vous savoir sur l'image ?",
+    "analyzeButton": "Analyser l'Image",
+    "result": "Résultat",
+    "analyzing": "Analyse en cours...",
+    "imageAnalysisLink": "Analyse d'Image",
+    "faqQuick": [
+        {
+            "label": "🔑 Comment ouvrir la porte ?",
+            "query": "Comment ouvrir la porte ?"
+        },
+        {
+            "label": "🚗 Comment lever la barrière ?",
+            "query": "Comment lever la barrière ?"
+        },
+        {
+            "label": "❄️ Comment allumer la climatisation ?",
+            "query": "Comment allumer la climatisation ?"
+        },
+        {
+            "label": "📤 Comment faire le check-out ?",
+            "query": "Comment faire le check-out ?"
+        }
+    ]
+}

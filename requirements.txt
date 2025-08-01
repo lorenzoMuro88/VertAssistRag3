@@ -1,0 +1,17 @@
+flask
+openai>=1.0.0
+python-dotenv
+faiss-cpu
+tiktoken
+PyPDF2>=3.0.1         # parsing PDF migliorato rispetto a pdfminer
+beautifulsoup4        # parsing HTML da web
+requests              # download pagine web
+flask-cors            # gestione CORS
+flask-limiter         # rate limiting
+
+# Development tools
+black                 # formattatore di codice
+flake8               # linter
+pylint               # linter
+pytest               # testing
+python-dotenv        # gestione variabili d'ambiente

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Assistente Orchidee</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'media',
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1e40af',
+            background: '#f9fafb',
+            darkbg: '#1a1c1f'
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-background dark:bg-darkbg min-h-screen text-gray-800 dark:text-gray-100 transition">
+  <div class="flex flex-col items-center px-4 sm:px-6 lg:px-8 py-6 w-full max-w-screen-md mx-auto">
+    <h1 class="text-3xl sm:text-4xl font-bold mb-2 text-center">Assistente Orchidee</h1>
+    <div class="text-xs text-gray-500 dark:text-gray-400 mb-6 flex items-center gap-2">
+      <span class="inline-flex items-center px-2 py-0.5 rounded bg-green-100 text-green-800 text-xs font-medium">
+        🧠 Modalità conversazionale attiva
+      </span>
+    </div>
+
+    <!-- Input + Pulsanti -->
+    <div class="w-full flex flex-col sm:flex-row sm:items-center sm:space-x-2 space-y-2 sm:space-y-0">
+      <input id="userInput" type="text" placeholder="Scrivi una domanda..."
+             class="flex-grow px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm focus:ring-2 focus:ring-primary focus:outline-none text-base sm:text-lg dark:bg-gray-800 dark:text-white">
+      <div class="flex flex-wrap gap-2">
+        <button id="searchBtn" onclick="search()"
+                class="px-5 py-2.5 bg-primary text-white rounded-xl hover:bg-blue-700 transition text-sm sm:text-base">
+          Cerca
+        </button>
+        <form method="POST" action="/reset">
+          <button type="submit" class="px-4 py-2 border rounded text-sm text-orange-600 border-orange-400 hover:bg-orange-50 dark:hover:bg-gray-800">
+            Ricomincia
+          </button>
+        </form>
+        <button onclick="downloadHistory()"
+                class="px-4 py-2 border rounded text-sm text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700">
+          ⬇️ Log
+        </button>
+      </div>
+    </div>
+
+    <!-- Risposta -->
+    <div id="results" class="w-full mt-8 space-y-4 hidden">
+      <h2 class="text-xl font-semibold">Risposta</h2>
+      <div id="badge" class="text-xs text-gray-500">Risposta generata a partire dai documenti forniti</div>
+      <div id="resultContent" class="space-y-4 text-base leading-relaxed"></div>
+    </div>
+
+    <!-- Cronologia -->
+    <div id="faqSection" class="w-full mt-10">
+      <div class="flex items-center justify-between">
+        <h2 class="text-xl font-semibold mb-2">Domande recenti</h2>
+        <button onclick="clearCache()" class="text-sm text-red-500 hover:underline">
+          Cancella cronologia
+        </button>
+      </div>
+      <div id="faqList" class="space-y-2"></div>
+    </div>
+  </div>
+
+  <!-- Script JS -->
+  <script>
+    let faqHistory = JSON.parse(localStorage.getItem("faqHistory") || "[]");
+    let conversationLog = JSON.parse(localStorage.getItem("conversationLog") || "[]");
+
+    async function search(term = null) {
+      const inputEl = document.getElementById("userInput");
+      const searchBtn = document.getElementById("searchBtn");
+      if (searchBtn.disabled) return;
+
+      const query = (term || inputEl.value.trim()).toLowerCase();
+      const resultBox = document.getElementById("results");
+      const resultContent = document.getElementById("resultContent");
+
+      if (!query) return;
+
+      inputEl.value = query;
+      inputEl.blur();
+      searchBtn.disabled = true;
+      searchBtn.classList.add("opacity-50", "cursor-not-allowed");
+      resultBox.classList.remove("hidden");
+
+      const cached = conversationLog.find(item => item.question === query);
+      if (cached) {
+        renderAnswer(cached.answer);
+        resetSearchState();
+        return;
+      }
+
+      resultContent.innerHTML = `
+        <div class="flex items-center space-x-2 text-gray-600 dark:text-gray-300">
+          <svg class="animate-spin h-5 w-5 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+          </svg>
+          <span>Sto cercando...</span>
+        </div>`;
+
+      const response = await fetch("/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: query })
+      });
+
+      if (!response.ok || !response.body) {
+        resultContent.innerText = "Errore di rete o nessuna risposta";
+        resetSearchState();
+        return;
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder("utf-8");
+      let done = false;
+      let buffer = "";
+      resultContent.innerHTML = "";
+
+      while (!done) {
+        const { value, done: doneReading } = await reader.read();
+        done = doneReading;
+        const chunk = decoder.decode(value);
+        buffer += chunk;
+        renderAnswer(buffer);
+
+        const overlapMatch = buffer.match(/\[overlap:(\d+(\.\d+)?)\]/);
+        if (overlapMatch) {
+          const percent = overlapMatch[1];
+          document.getElementById("badge").innerText = `Risposta generata dal contesto (overlap: ${percent}%)`;
+        }
+      }
+
+      updateFAQ(query);
+      conversationLog.push({ question: query, answer: buffer });
+      localStorage.setItem("faqHistory", JSON.stringify(faqHistory));
+      localStorage.setItem("conversationLog", JSON.stringify(conversationLog));
+      resetSearchState();
+    }
+
+    function renderAnswer(buffer) {
+      const resultContent = document.getElementById("resultContent");
+      const fallbackTrigger = "Non sono in grado di rispondere a questa domanda in base alle informazioni disponibili.";
+      const hasFallback = buffer.includes(fallbackTrigger);
+
+      const [main, fallback] = hasFallback ? buffer.split(fallbackTrigger) : [buffer, null];
+
+      const imageMatch = (main || "").match(/(https?:\/\/[^\s]+\.(jpg|jpeg|png|gif))/i);
+      const imageHtml = imageMatch ? `<div class="mb-4"><img src="${imageMatch[1]}" class="mx-auto rounded shadow max-w-sm" alt="immagine"></div>` : "";
+
+      const formattedMain = (main || "").trim()
+        .replace(imageMatch ? imageMatch[1] : "", "")
+        .split("\n\n").map(p =>
+          `<p class="mb-3">${p
+            .replace(/\n/g, "<br>")
+            .replace(/(https?:\/\/[^\s]+\.(jpg|jpeg|png|gif))/gi, '')
+            .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" class="text-blue-600 underline" target="_blank">$1</a>')
+          }</p>`
+        ).join("");
+
+      const formattedFallback = fallback
+        ? `<div class="mt-4 text-sm text-gray-600 dark:text-gray-400 border-t pt-2">
+             ${fallbackTrigger}<br>
+             <a href="#" class="text-blue-600 underline">Contattaci qui</a>
+           </div>`
+        : "";
+
+      resultContent.innerHTML = `${imageHtml}<div class="text-base leading-relaxed">${formattedMain}</div>${formattedFallback}`;
+    }
+
+    function updateFAQ(newQuestion) {
+      if (faqHistory.includes(newQuestion)) return;
+      faqHistory.unshift(newQuestion);
+      if (faqHistory.length > 5) faqHistory.pop();
+
+      const faqList = document.getElementById("faqList");
+      faqList.innerHTML = faqHistory.map(q =>
+        `<div class="text-blue-700 dark:text-blue-400 hover:underline cursor-pointer" onclick="search('${q.replace(/'/g, "\\'")}')">${q}</div>`
+      ).join("");
+    }
+
+    function clearCache() {
+      faqHistory = [];
+      conversationLog = [];
+      localStorage.removeItem("faqHistory");
+      localStorage.removeItem("conversationLog");
+      document.getElementById("faqList").innerHTML = "";
+    }
+
+    function downloadHistory() {
+      if (conversationLog.length === 0) return;
+      const csv = ["Domanda,Risposta"];
+      conversationLog.forEach(item => {
+        const q = item.question.replace(/"/g, '""');
+        const a = item.answer.replace(/"/g, '""');
+        csv.push(`"${q}","${a}"`);
+      });
+      const blob = new Blob([csv.join("\n")], { type: 'text/csv' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'cronologia_assistente.csv';
+      link.click();
+    }
+
+    function resetSearchState() {
+      const btn = document.getElementById("searchBtn");
+      btn.disabled = false;
+      btn.classList.remove("opacity-50", "cursor-not-allowed");
+    }
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" && document.activeElement.id === "userInput") {
+        search();
+      }
+    });
+  </script>
+</body>
+</html>

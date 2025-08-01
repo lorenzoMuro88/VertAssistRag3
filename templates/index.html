@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Assistenza Ospiti</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#2563eb',
+            background: '#f9fafb'
+          },
+          borderRadius: {
+            lg: '1rem'
+          },
+          boxShadow: {
+            soft: '0 2px 8px rgba(0,0,0,0.05)'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .mat-input {
+      border: none;
+      border-bottom: 2px solid #cfd8dc;
+      background: transparent;
+      border-radius: 0;
+      outline: none;
+      transition: border-color 0.2s;
+      box-shadow: none !important;
+    }
+
+    .mat-input:focus {
+      border-bottom: 2px solid #1976d2;
+      background: transparent;
+    }
+
+    .mat-input:disabled {
+      background: transparent;
+      color: #aaa;
+    }
+
+    .mat-tab-active {
+      border-bottom: 2px solid #1976d2 !important;
+      color: #1976d2 !important;
+      background: transparent !important;
+    }
+
+    .mat-tab-inactive {
+      border-bottom: 2px solid transparent !important;
+      color: #616161 !important;
+      background: transparent !important;
+    }
+
+    .mat-btn {
+      background: #1976d2;
+      color: #fff;
+      font-weight: 500;
+      border: none;
+      border-radius: 3px;
+      transition: box-shadow 0.2s, background 0.2s;
+      box-shadow: 0 1px 3px 0 rgba(25, 118, 210, 0.08);
+    }
+
+    .mat-btn:hover,
+    .mat-btn:focus {
+      background: #1565c0;
+      box-shadow: 0 3px 12px 0 rgba(25, 118, 210, 0.16);
+    }
+
+    .mat-btn-alt {
+      background: #fff;
+      color: #1976d2;
+      border: 1px solid #1976d2;
+      border-radius: 3px;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .mat-btn-alt:hover,
+    .mat-btn-alt:focus {
+      background: #e3f2fd;
+      color: #0d47a1;
+    }
+
+    .mat-btn-secondary {
+      background: #fff3e0;
+      color: #f57c00;
+      border: 1px solid #ff9800;
+      border-radius: 3px;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .mat-btn-secondary:hover,
+    .mat-btn-secondary:focus {
+      background: #ffe0b2;
+      color: #e65100;
+    }
+
+    input[type="file"].mat-file {
+      border: none;
+      padding: 0.5rem 0 0.25rem 0;
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar {
+      width: 7px;
+      background: #e3e6ea;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #b0bec5;
+      border-radius: 4px;
+    }
+
+    body.dark ::-webkit-scrollbar-thumb {
+      background: #374151;
+    }
+  </style>
+</head>
+
+<body class="bg-background min-h-screen antialiased text-gray-800">
+  <div class="max-w-lg mx-auto p-6">
+    <div class="flex justify-end mb-4">
+      <a href="/image-analysis" class="text-primary hover:underline text-sm mr-4" id="imageAnalysisLink"
+        style="display: none;">Analisi Immagini</a>
+      <select id="langSelect" class="border rounded px-2 py-1 text-sm">
+        <option value="it">Italiano</option>
+        <option value="en">English</option>
+        <option value="fr">Français</option>
+      </select>
+    </div>
+    <header class="text-center mb-8">
+      <h1 class="text-3xl font-bold text-primary">Hai bisogno di aiuto?</h1>
+      <p class="text-sm text-gray-500">Risposte rapide per gli ospiti della struttura</p>
+    </header>
+
+    <section class="mb-6">
+      <h2 class="text-lg font-semibold mb-2" id="quickFaqTitle">Domande comuni</h2>
+      <div id="quickFaq" class="grid grid-cols-1 gap-3"></div>
+    </section>
+
+    <section class="mb-6">
+      <label for="userInput" class="block text-sm font-medium mb-1">Hai altre domande? Falle Qui!</label>
+      <form onsubmit="event.preventDefault();search();" class="flex gap-2">
+        <input id="userInput" type="text" placeholder="Scrivi qui la tua domanda"
+          class="flex-1 px-4 py-2 rounded-lg border border-gray-300 shadow-sm text-sm" />
+        <button id="searchBtn" type="submit" class="px-4 py-2 bg-primary text-white rounded-lg text-sm">Invia</button>
+      </form>
+    </section>
+
+    <div id="loadingSpinner" class="text-center my-6 hidden">
+      <div class="flex justify-center items-center gap-2 text-sm text-gray-500">
+        <svg class="animate-spin h-5 w-5 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none"
+          viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+        </svg>
+        <span>Sto cercando la risposta...</span>
+      </div>
+    </div>
+
+    <section id="results" class="hidden">
+      <div class="bg-white border rounded-lg shadow-soft p-4">
+        <h3 class="text-sm font-semibold text-gray-600 mb-2">Risposta</h3>
+        <div id="resultContent" class="text-base leading-relaxed text-gray-800">
+          <div id="image-container"></div>
+          <div id="text-container" class="prose max-w-none"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="faqSection" class="w-full mt-10">
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="text-lg font-semibold">Domande recenti</h2>
+        <button onclick="confirmClearCache()" class="text-xs text-red-500 hover:underline" type="button">Cancella
+          cronologia</button>
+      </div>
+      <div id="faqList" class="space-y-1"></div>
+    </section>
+  </div>
+
+  <script>
+    let faqHistory = JSON.parse(localStorage.getItem("faqHistory") || "[]");
+    let conversationLog = JSON.parse(localStorage.getItem("conversationLog") || "[]");
+    let fullTextBuffer = "";
+    let typingTimer = null;
+    let hasFallback = false;
+
+    async function search(term = null) {
+      const inputEl = document.getElementById("userInput");
+      const searchBtn = document.getElementById("searchBtn");
+      const loadingSpinner = document.getElementById("loadingSpinner");
+      const resultBox = document.getElementById("results");
+      const resultContent = document.getElementById("resultContent");
+
+      if (searchBtn.disabled) return;
+
+      const query = (term || inputEl.value.trim()).toLowerCase();
+      if (!query) return;
+
+      // Reset state
+      hasFallback = false;
+      fullTextBuffer = "";
+
+      inputEl.value = query;
+      inputEl.blur();
+      searchBtn.disabled = true;
+      searchBtn.classList.add("opacity-50", "cursor-not-allowed");
+      resultBox.classList.add("hidden"); // Hide the box at the start
+      loadingSpinner.classList.remove("hidden");
+      resultContent.innerHTML = `
+        <div id="image-container"></div>
+        <div id="text-container" class="prose max-w-none"></div>
+      `;
+
+      const lang = localStorage.getItem('lang') || 'it';
+
+      const cached = conversationLog.find(item => item.question === query);
+      if (cached) {
+        if (cached.answer.includes("Non sono in grado di rispondere")) {
+          hasFallback = true;
+        }
+        resultBox.classList.remove("hidden"); // Show the box for cached answers
+        fullTextBuffer = cached.answer;
+        scheduleTyping();
+        return;
+      }
+
+      try {
+        const response = await fetch("/ask", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: query, lang })
+        });
+
+        if (!response.ok || !response.body) {
+          resultContent.innerHTML = "<div class='text-red-500'>Errore di rete o nessuna risposta</div>";
+          finalizeSearch();
+          return;
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder("utf-8");
+        let done = false;
+        let firstChunk = true;
+
+        while (!done) {
+          const { value, done: doneReading } = await reader.read();
+          done = doneReading;
+          const chunk = decoder.decode(value);
+          if (firstChunk && chunk.trim().length > 0) {
+            resultBox.classList.remove("hidden"); // Show the box on first chunk
+            firstChunk = false;
+          }
+          fullTextBuffer += chunk;
+          scheduleTyping();
+        }
+
+        // Ensure final display after streaming is complete
+        displayResponse(fullTextBuffer);
+
+        updateFAQ(query);
+        conversationLog.push({ question: query, answer: fullTextBuffer });
+        localStorage.setItem("faqHistory", JSON.stringify(faqHistory));
+        localStorage.setItem("conversationLog", JSON.stringify(conversationLog));
+      } catch (error) {
+        console.error("Errore nella richiesta:", error);
+        resultContent.innerHTML = "<div class='text-red-500'>Si è verificato un errore durante la ricerca</div>";
+      } finally {
+        finalizeSearch();
+      }
+    }
+
+    function scheduleTyping() {
+      if (typingTimer) clearTimeout(typingTimer);
+      typingTimer = setTimeout(() => {
+        displayResponse(fullTextBuffer);
+        finalizeSearch();
+      }, 10);
+    }
+
+    function typeText(targetEl, text, callback) {
+      targetEl.innerHTML = "";
+      let i = 0;
+      function type() {
+        if (i < text.length) {
+          targetEl.innerHTML += text[i] === '\n' ? '<br>' : text[i];
+          i++;
+          setTimeout(type, 10);
+        } else if (callback) {
+          callback();
+        }
+      }
+      type();
+    }
+
+    function displayResponse(text) {
+      const fallbackTriggers = [
+        "Non sono in grado di rispondere a questa domanda in base alle informazioni disponibili.",
+        "I'm not able to answer this question based on the available information.",
+        "Je ne suis pas en mesure de répondre à cette question sur la base des informations disponibles."
+      ];
+      const fallbackTrigger = window.fallbackText || fallbackTriggers[0];
+      // Cerca la posizione della prima frase di fallback
+      const found = fallbackTriggers.find(trigger => text.toLowerCase().includes(trigger.toLowerCase()));
+      if (found) {
+        const textContainer = document.getElementById("text-container");
+        textContainer.innerHTML = `<p class="text-sm text-gray-600 mb-2" id="fallbackTyping"></p>
+          <a href="#" class="text-primary hover:underline text-sm">${window.contactText || 'Contattaci per assistenza'}</a>`;
+        const fallbackEl = document.getElementById("fallbackTyping");
+        typeText(fallbackEl, fallbackTrigger);
+        const imageContainer = document.getElementById("image-container");
+        if (imageContainer) imageContainer.innerHTML = "";
+        return;
+      }
+
+      // Handle image if present
+      const imageMatch = text.match(/(https?:\/\/[^\s]+\.(jpg|jpeg|png|gif))/i);
+      const imageContainer = document.getElementById("image-container");
+      if (imageMatch) {
+        imageContainer.innerHTML = `<div class="mb-4 overflow-hidden"><img src="${imageMatch[1]}" class="w-full h-auto object-contain rounded shadow" alt="immagine"></div>`;
+      } else {
+        imageContainer.innerHTML = "";
+      }
+
+      // Clean and format the text, removing ALL fallback messages from the main text
+      const cleaned = text.trim()
+        .replace(new RegExp(fallbackTrigger, 'gi'), "") // Remove ALL fallback messages (case insensitive)
+        .replace(imageMatch ? imageMatch[1] : "", "")
+        .replace(/\[overlap:.*?\]/g, "")
+        .replace(/(https?:\/\/[^\s]+\.(jpg|jpeg|png|gif))/gi, '')
+        .replace(/(https?:\/\/[^\s]+)/g, '<a href=\"$1\" class=\"text-primary underline\" target=\"_blank\">$1</a>')
+        .replace(/\n\s*\n/g, '\n') // Remove extra newlines
+        .trim();
+
+      const textContainer = document.getElementById("text-container");
+      if (textContainer) {
+        let content = cleaned.replace(/\n/g, "<br>");
+        textContainer.innerHTML = `<div class="text-sm text-gray-800">${content}</div>`;
+      }
+    }
+
+    function finalizeSearch() {
+      document.getElementById("searchBtn").disabled = false;
+      document.getElementById("searchBtn").classList.remove("opacity-50", "cursor-not-allowed");
+      document.getElementById("loadingSpinner").classList.add("hidden");
+    }
+
+    function toggleTab(tab) {
+      document.getElementById("searchTab").classList.toggle("hidden", tab !== "search");
+      document.getElementById("imageTab").classList.toggle("hidden", tab !== "image");
+      document.getElementById("tabSearch").classList.toggle("mat-tab-active", tab === "search");
+      document.getElementById("tabSearch").classList.toggle("mat-tab-inactive", tab !== "search");
+      document.getElementById("tabImage").classList.toggle("mat-tab-active", tab === "image");
+      document.getElementById("tabImage").classList.toggle("mat-tab-inactive", tab !== "image");
+      document.getElementById("tabSearch").setAttribute("aria-selected", tab === "search");
+      document.getElementById("tabImage").setAttribute("aria-selected", tab === "image");
+    }
+
+    function updateFAQ(newQuestion) {
+      if (faqHistory.includes(newQuestion)) return;
+      faqHistory.unshift(newQuestion);
+      if (faqHistory.length > 5) faqHistory.pop();
+      const faqList = document.getElementById("faqList");
+      faqList.innerHTML = faqHistory.map(q =>
+        `<button class="text-primary hover:underline text-left w-full bg-transparent" onclick="search('${q.replace(/'/g, "\\'")}')">${q}</button>`
+      ).join("");
+    }
+
+    function clearCache() {
+      faqHistory = [];
+      conversationLog = [];
+      localStorage.removeItem("faqHistory");
+      localStorage.removeItem("conversationLog");
+      document.getElementById("faqList").innerHTML = "";
+      document.getElementById("results").classList.add("hidden");
+    }
+
+    function confirmClearCache() {
+      if (confirm("Vuoi davvero cancellare tutta la cronologia?")) {
+        clearCache();
+      }
+    }
+
+    function downloadHistory() {
+      if (conversationLog.length === 0) return;
+      const csv = ["Domanda,Risposta"];
+      conversationLog.forEach(item => {
+        const q = item.question.replace(/\"/g, '""');
+        const a = item.answer.replace(/\"/g, '""');
+        csv.push(`"${q}","${a}"`);
+      });
+      const blob = new Blob([csv.join("\n")], { type: 'text/csv' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'cronologia_assistente.csv';
+      link.click();
+    }
+
+    async function analyzeImage() {
+      const prompt = document.getElementById("imagePrompt")?.value.trim();
+      const input = document.getElementById("imageInput");
+      const resultBox = document.getElementById("imageResult");
+      if (!input?.files || input.files.length === 0) {
+        if (resultBox) resultBox.innerText = "Seleziona un'immagine.";
+        return;
+      }
+      const formData = new FormData();
+      formData.append("file", input.files[0]);
+      formData.append("prompt", prompt);
+      if (resultBox) resultBox.innerText = "Analisi in corso...";
+      const response = await fetch("/analyze-image", {
+        method: "POST",
+        body: formData
+      });
+      const data = await response.json();
+      if (resultBox) resultBox.innerText = data.result ? `Risposta: ${data.result}` : `Errore: ${data.error || "Impossibile analizzare l'immagine."}`;
+    }
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" && document.activeElement.id === "userInput") {
+        search();
+      }
+    });
+
+    async function setLanguage(lang) {
+      localStorage.setItem('lang', lang);
+      const res = await fetch(`/static/lang/lang.${lang}.json`);
+      const t = await res.json();
+      document.querySelector('h1').textContent = t.title;
+      document.querySelector('header p').textContent = t.subtitle;
+      document.querySelector('label[for="userInput"]').textContent = t.label;
+      document.getElementById('userInput').placeholder = t.placeholder;
+      document.getElementById('searchBtn').textContent = t.send;
+      document.querySelector('#faqSection h2').textContent = t.faq;
+      document.querySelector('#faqSection button').textContent = t.clear;
+      document.querySelector('#results h3').textContent = t.answer;
+      document.querySelector('#loadingSpinner span').textContent = t.spinner;
+      document.getElementById('imageAnalysisLink').textContent = t.imageAnalysisLink;
+      window.fallbackText = t.fallback;
+      window.contactText = t.contact;
+      // Genera i bottoni delle domande frequenti
+      const quickFaqDiv = document.getElementById('quickFaq');
+      quickFaqDiv.innerHTML = '';
+      if (Array.isArray(t.faqQuick)) {
+        t.faqQuick.forEach(faq => {
+          const btn = document.createElement('button');
+          btn.className = 'w-full text-left bg-white px-4 py-3 rounded-lg shadow-soft hover:bg-gray-50 border';
+          btn.textContent = faq.label;
+          btn.onclick = () => search(faq.query);
+          quickFaqDiv.appendChild(btn);
+        });
+      }
+    }
+
+    // Controlla se l'analisi immagini è abilitata
+    async function checkImageAnalysisEnabled() {
+      try {
+        const response = await fetch('/check-image-analysis');
+        if (!response.ok) {
+          throw new Error('Errore nella risposta del server');
+        }
+        const data = await response.json();
+        console.log('Stato analisi immagini:', data); // Debug
+        const imageAnalysisLink = document.getElementById('imageAnalysisLink');
+        if (imageAnalysisLink) {
+          imageAnalysisLink.style.display = data.enabled ? 'inline' : 'none';
+        }
+      } catch (error) {
+        console.error('Errore nel controllo dell\'analisi immagini:', error);
+        // In caso di errore, nascondi il link
+        const imageAnalysisLink = document.getElementById('imageAnalysisLink');
+        if (imageAnalysisLink) {
+          imageAnalysisLink.style.display = 'none';
+        }
+      }
+    }
+
+    // Esegui il controllo all'avvio
+    document.addEventListener('DOMContentLoaded', () => {
+      checkImageAnalysisEnabled();
+    });
+
+    const lang = localStorage.getItem('lang') || 'it';
+    document.getElementById('langSelect').value = lang;
+    setLanguage(lang);
+    document.getElementById('langSelect').addEventListener('change', (e) => {
+      setLanguage(e.target.value);
+    });
+  </script>
+</body>
+
+</html>

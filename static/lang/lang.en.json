@@ -1,0 +1,40 @@
+{
+    "title": "Need help?",
+    "subtitle": "Quick answers for hotel guests",
+    "label": "Have other questions? Ask them here!",
+    "placeholder": "Type your question here",
+    "send": "Send",
+    "faq": "Recent questions",
+    "clear": "Clear history",
+    "answer": "Answer",
+    "spinner": "Looking for the answer...",
+    "fallback": "I'm not able to answer this question based on the available information.",
+    "contact": "Contact us for assistance",
+    "imageAnalysisTitle": "Image Analysis",
+    "imageAnalysisSubtitle": "Upload an image to get a detailed description",
+    "selectImage": "Select an image",
+    "promptLabel": "Prompt (optional)",
+    "promptPlaceholder": "What would you like to know about the image?",
+    "analyzeButton": "Analyze Image",
+    "result": "Result",
+    "analyzing": "Analysis in progress...",
+    "imageAnalysisLink": "Image Analysis",
+    "faqQuick": [
+        {
+            "label": "🔑 How do I open the door?",
+            "query": "How do I open the door?"
+        },
+        {
+            "label": "🚗 How do I raise the barrier?",
+            "query": "How do I raise the barrier?"
+        },
+        {
+            "label": "❄️ How do I turn on the air conditioning?",
+            "query": "How do I turn on the air conditioning?"
+        },
+        {
+            "label": "📤 How do I check out?",
+            "query": "How do I check out?"
+        }
+    ]
+}

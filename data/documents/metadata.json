@@ -1,0 +1,42 @@
+{
+  "keyboxes/keybox_codici.md": {
+    "description": "Tabella che associa codici keybox univoci a stanze o houseboat, identificati con prefisso 'Hb' e numero.",
+    "tags": [
+      "mappatura",
+      "houseboat",
+      "codici",
+      "keybox",
+      "identificazione"
+    ]
+  },
+  "docs/guida/Houseboat Informations.md": {
+    "description": "Guida completa per il soggiorno in House Boat, con informazioni su accesso, parcheggio, WiFi e raccolta differenziata.",
+    "tags": [
+      "House Boat",
+      "Check-in",
+      "Accesso",
+      "WiFi",
+      "Raccolta differenziata"
+    ]
+  },
+  "docs/regole/house_rules.md": {
+    "description": "Guidelines for house rules, including prohibited activities, reminders, and departure checklist.",
+    "tags": [
+      "house rules",
+      "guidelines",
+      "prohibited activities",
+      "reminders",
+      "departure checklist"
+    ]
+  },
+  "Immagini/info_immagini.md": {
+    "description": "Collezione di immagini che mostrano la reception, un pulsante, bidoni e chiavi con telecomandi.",
+    "tags": [
+      "immagini",
+      "reception",
+      "pulsante",
+      "bidoni",
+      "chiavi"
+    ]
+  }
+}

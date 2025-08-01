@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Log Interazioni</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#2563eb',
+            background: '#f9fafb'
+          },
+          borderRadius: {
+            lg: '1rem'
+          },
+          boxShadow: {
+            soft: '0 2px 8px rgba(0,0,0,0.05)'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .mat-input {
+      border: none;
+      border-bottom: 2px solid #cfd8dc;
+      background: transparent;
+      border-radius: 0;
+      outline: none;
+      transition: border-color 0.2s;
+      box-shadow: none !important;
+    }
+
+    .mat-input:focus {
+      border-bottom: 2px solid #1976d2;
+      background: transparent;
+    }
+
+    .mat-input:disabled {
+      background: transparent;
+      color: #aaa;
+    }
+
+    .mat-btn {
+      background: #1976d2;
+      color: #fff;
+      font-weight: 500;
+      border: none;
+      border-radius: 3px;
+      transition: box-shadow 0.2s, background 0.2s;
+      box-shadow: 0 1px 3px 0 rgba(25, 118, 210, 0.08);
+    }
+
+    .mat-btn:hover,
+    .mat-btn:focus {
+      background: #1565c0;
+      box-shadow: 0 3px 12px 0 rgba(25, 118, 210, 0.16);
+    }
+
+    .mat-btn-alt {
+      background: #fff;
+      color: #1976d2;
+      border: 1px solid #1976d2;
+      border-radius: 3px;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .mat-btn-alt:hover,
+    .mat-btn-alt:focus {
+      background: #e3f2fd;
+      color: #0d47a1;
+    }
+
+    .mat-btn-secondary {
+      background: #fff3e0;
+      color: #f57c00;
+      border: 1px solid #ff9800;
+      border-radius: 3px;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .mat-btn-secondary:hover,
+    .mat-btn-secondary:focus {
+      background: #ffe0b2;
+      color: #e65100;
+    }
+
+    ::-webkit-scrollbar {
+      width: 7px;
+      background: #e3e6ea;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #b0bec5;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+
+<body class="bg-background min-h-screen antialiased text-gray-800">
+
+  <div class="max-w-5xl mx-auto p-6">
+    <h1 class="text-3xl font-bold text-primary text-center mb-8">📊 Log Interazioni Assistente</h1>
+
+    {% if not request.args.get('token') %}
+    <!-- Login Form -->
+    <div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-soft border">
+      <h2 class="text-xl font-semibold mb-4 text-center text-gray-800">🔐 Accesso Admin</h2>
+      <form action="{{ url_for('admin.admin_dashboard') }}" method="get" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium mb-1 text-gray-700">Token di accesso</label>
+          <input type="password" name="token" required
+            class="block w-full px-4 py-2 rounded-lg border border-gray-300 shadow-sm text-sm"
+            placeholder="Inserisci il token di accesso">
+        </div>
+        <button type="submit" class="w-full px-4 py-2 bg-primary text-white rounded-lg text-sm">Accedi</button>
+      </form>
+    </div>
+    {% else %}
+    <!-- Messaggi Flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="mb-6 space-y-2">
+      {% for category, message in messages %}
+      <div
+        class="px-4 py-2 rounded-lg {{ 'bg-green-100 text-green-800' if category == 'success' else 'bg-red-100 text-red-800' }}">
+        {{ message }}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- Form Caricamento -->
+    <div class="bg-white rounded-lg shadow-soft border p-6 mb-6">
+      <h2 class="text-lg font-semibold mb-4 text-gray-800">📂 Carica documento o link</h2>
+      <form action="{{ url_for('admin.admin_upload', token=request.args.get('token')) }}" method="post"
+        enctype="multipart/form-data" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium mb-1 text-gray-700">File (.pdf, .txt, .md)</label>
+          <input type="file" name="document"
+            class="block w-full px-4 py-2 rounded-lg border border-gray-300 shadow-sm text-sm">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1 text-gray-700">Link web</label>
+          <input type="url" name="link" placeholder="https://..."
+            class="block w-full px-4 py-2 rounded-lg border border-gray-300 shadow-sm text-sm">
+        </div>
+
+        <div class="flex flex-wrap gap-2 pt-2">
+          <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg text-sm">Carica</button>
+          <a href="{{ url_for('admin.admin_chunks', token=request.args.get('token')) }}"
+            class="px-4 py-2 bg-white text-primary border border-primary rounded-lg text-sm hover:bg-gray-50">📑 Chunk
+            indicizzati</a>
+        </div>
+      </form>
+    </div>
+
+    <!-- Pulsante reindicizza -->
+    <div class="bg-white rounded-lg shadow-soft border p-6 mb-6">
+      <h2 class="text-lg font-semibold mb-4 text-gray-800">🔁 Reindicizzazione</h2>
+
+      {% if needs_reindex %}
+      <div class="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <div class="flex items-center">
+          <svg class="w-5 h-5 text-yellow-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+            </path>
+          </svg>
+          <p class="text-yellow-700">
+            Sono stati aggiunti nuovi elementi. Ricordati di eseguire la reindicizzazione per aggiornare l'indice.
+          </p>
+        </div>
+      </div>
+      {% endif %}
+
+      <button onclick="showReindexModal()"
+        class="px-4 py-2 bg-orange-100 text-orange-600 border border-orange-300 rounded-lg text-sm hover:bg-orange-50">
+        Esegui Reindicizzazione
+      </button>
+    </div>
+
+    <!-- Elementi Caricati -->
+    <div class="bg-white rounded-lg shadow-soft border p-6 mb-6">
+      <div class="flex items-center justify-between cursor-pointer" onclick="toggleSection('loadedItems')">
+        <h2 class="text-lg font-semibold text-gray-800">📚 Elementi Caricati</h2>
+        <svg id="loadedItemsIcon" class="w-5 h-5 transform transition-transform duration-200" fill="none"
+          stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </div>
+
+      <div id="loadedItems" class="mt-4 space-y-4">
+        <!-- Documenti -->
+        <div class="space-y-2">
+          <h3 class="text-md font-medium text-gray-700">Documenti</h3>
+          <div class="bg-gray-50 rounded-lg p-4 max-h-60 overflow-y-auto">
+            <ul class="space-y-2">
+              {% for doc in documents %}
+              <li class="flex items-center justify-between text-sm">
+                <span class="text-gray-600">{{ doc }}</span>
+                <button onclick="deleteDocument('{{ doc }}')" class="text-red-500 hover:text-red-700">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                    </path>
+                  </svg>
+                </button>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+
+        <!-- Link -->
+        <div class="space-y-2">
+          <h3 class="text-md font-medium text-gray-700">Link</h3>
+          <div class="bg-gray-50 rounded-lg p-4 max-h-60 overflow-y-auto">
+            <ul class="space-y-2">
+              {% for link in links %}
+              <li class="flex items-center justify-between text-sm">
+                <span class="text-gray-600">{{ link }}</span>
+                <button onclick="deleteLink('{{ link }}')" class="text-red-500 hover:text-red-700">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                    </path>
+                  </svg>
+                </button>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+
+        <section class="mb-8">
+
+          <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-lg font-semibold mb-4 text-gray-800">🔁 Configurazione</h2>
+            <div class="mb-4">
+              <label for="minOverlap" class="block text-sm font-medium text-gray-700 mb-2">MIN_OVERLAP</label>
+              <div class="flex gap-2">
+                <input type="number" id="minOverlap" step="1" min="0" max="100"
+                  class="flex-1 px-3 py-2 border rounded-md text-sm" onkeydown="handleKeyDown(event)" />
+                <button onclick="updateMinOverlap()"
+                  class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors">
+                  Aggiorna
+                </button>
+              </div>
+              <p class="mt-1 text-sm text-gray-500">Valore attuale: <span id="currentMinOverlap">-</span></p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Tabella log -->
+        <div class="bg-white rounded-lg shadow-soft border p-6">
+          <h2 class="text-lg font-semibold mb-4 text-gray-800">📝 Log delle Interazioni</h2>
+          <div class="overflow-auto">
+            <table class="min-w-full text-sm">
+              <thead class="bg-gray-50 text-left">
+                <tr>
+                  <th class="py-3 px-4 text-gray-600 font-medium">🕒 Timestamp</th>
+                  <th class="py-3 px-4 text-gray-600 font-medium">💬 Query</th>
+                  <th class="py-3 px-4 text-gray-600 font-medium">📝 Risposta</th>
+                  <th class="py-3 px-4 text-gray-600 font-medium">📊 Overlap</th>
+                  <th class="py-3 px-4 text-gray-600 font-medium">⚠️ Fallback</th>
+                  <th class="py-3 px-4 text-gray-600 font-medium">✏️</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200">
+                {% for entry in logs %}
+                <tr class="hover:bg-gray-50">
+                  <td class="py-3 px-4 whitespace-nowrap text-gray-600">{{ entry.timestamp[:19].replace('T', ' ') }}
+                  </td>
+                  <td class="py-3 px-4 text-gray-800">{{ entry.query }}</td>
+                  <td class="py-3 px-4 text-gray-600 max-w-xs truncate">
+                    {% if entry.answer %}
+                    <span id="answer-preview-{{ loop.index }}">{{ entry.answer[:100] }}{% if entry.answer|length > 100
+                      %}...{% endif %}</span>
+                    {% if entry.answer|length > 100 %}
+                    <button type='button' class='ml-2 text-blue-600 underline text-xs'
+                      onclick='showFullAnswer({{ entry.answer|default('')|tojson }})'>Mostra tutto</button>
+                    {% endif %}
+                    {% else %}
+                    <span class="text-gray-400 italic">-</span>
+                    {% endif %}
+                  </td>
+                  <td class="py-3 px-4 text-gray-600">{{ entry.overlap }}%</td>
+                  <td class="py-3 px-4 text-center">
+                    {% if entry.fallback %}
+                    <span class="text-red-600 font-medium">Sì</span>
+                    {% else %}
+                    <span class="text-green-600 font-medium">No</span>
+                    {% endif %}
+                  </td>
+                  <td class="py-3 px-4 text-center">
+                    <button type='button'
+                      onclick='showCorrectionModal({{ entry.query|tojson }}, {{ entry.answer|default('')|tojson }})'
+                      title='Modifica' class='text-blue-600 hover:text-blue-800 text-lg'>✏️</button>
+                  </td>
+                </tr>
+                {% else %}
+                <tr>
+                  <td colspan="4" class="py-4 text-center text-gray-500">Nessun log disponibile.</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Modal di conferma MIN_OVERLAP -->
+        <div id="confirmModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
+          <div class="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Conferma Modifica</h3>
+            <p class="text-sm text-gray-500 mb-4">
+              Stai per modificare il valore di MIN_OVERLAP da <span id="oldValue" class="font-medium"></span> a <span
+                id="newValue" class="font-medium"></span>.
+              Vuoi procedere?
+            </p>
+            <div class="flex justify-end gap-3">
+              <button onclick="closeConfirmModal()"
+                class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md">
+                Annulla
+              </button>
+              <button onclick="confirmUpdate()"
+                class="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-dark rounded-md">
+                Conferma
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal di conferma Reindicizza -->
+        <div id="reindexConfirmModal"
+          class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
+          <div class="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Conferma Reindicizzazione</h3>
+            <p class="text-sm text-gray-500 mb-4">
+              Stai per avviare la reindicizzazione dei documenti. Questa operazione potrebbe richiedere alcuni minuti.
+              Vuoi procedere?
+            </p>
+            <div class="flex justify-end gap-3">
+              <button onclick="closeReindexModal()"
+                class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md">
+                Annulla
+              </button>
+              <button onclick="confirmReindex()"
+                class="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-dark rounded-md">
+                Conferma
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Spinner Reindicizzazione -->
+        <div id="reindexSpinnerModal"
+          class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
+          <div class="bg-white rounded-lg p-6 max-w-sm w-full mx-4 text-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p class="text-sm text-gray-600">Reindicizzazione in corso...</p>
+          </div>
+        </div>
+
+        <!-- Modal per la correzione -->
+        <div id="correctionModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
+          <div class="bg-white rounded-lg p-6 max-w-lg w-full mx-4">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Correggi Risposta</h3>
+            <input type="hidden" id="correctionQuery">
+            <div id="originalAnswerBox" class="mb-2 p-2 bg-gray-50 border rounded text-gray-700 text-sm"
+              style="display:none;"></div>
+            <textarea id="correctionAnswer" class="w-full border rounded p-2 mb-4" rows="4"></textarea>
+            <div class="flex justify-end gap-3">
+              <button onclick="closeCorrectionModal()"
+                class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md">Annulla</button>
+              <button onclick="submitCorrection()"
+                class="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-dark rounded-md">Salva</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-soft border p-6 mb-6">
+          <h2 class="text-lg font-semibold mb-4 text-gray-800">✏️ Correzioni attive</h2>
+          <ul id="correctionsList" class="space-y-2"></ul>
+        </div>
+
+        <!-- Modal risposta completa -->
+        <div id="fullAnswerModal"
+          class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+          <div class="bg-white rounded-lg p-6 max-w-2xl w-full mx-4">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Risposta completa</h3>
+            <div id="fullAnswerContent" class="mb-4 whitespace-pre-line text-gray-800"></div>
+            <div class="flex justify-end">
+              <button onclick="closeFullAnswerModal()"
+                class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md">Chiudi</button>
+            </div>
+          </div>
+        </div>
+
+        <script>
+          let pendingUpdate = null;
+
+          function showConfirmModal(oldValue, newValue) {
+            document.getElementById('oldValue').textContent = oldValue + '%';
+            document.getElementById('newValue').textContent = newValue + '%';
+            document.getElementById('confirmModal').classList.remove('hidden');
+          }
+
+          function closeConfirmModal() {
+            document.getElementById('confirmModal').classList.add('hidden');
+            pendingUpdate = null;
+          }
+
+          async function confirmUpdate() {
+            if (pendingUpdate) {
+              await updateMinOverlapValue(pendingUpdate);
+              closeConfirmModal();
+            }
+          }
+
+          function handleKeyDown(event) {
+            const input = event.target;
+            const currentValue = parseFloat(input.value) || 0;
+
+            // Gestisci le frecce su/giù
+            if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+              event.preventDefault(); // Previeni il comportamento di default
+
+              const increment = event.key === 'ArrowUp' ? 1 : -1;
+              const newValue = Math.max(0, Math.min(100, currentValue + increment));
+
+              input.value = newValue;
+
+              // Mostra la finestra di conferma
+              const decimalValue = newValue / 100;
+              showConfirmModal(currentValue, newValue);
+              pendingUpdate = decimalValue;
+            }
+          }
+
+          async function updateMinOverlap() {
+            const minOverlapInput = document.getElementById('minOverlap');
+            const value = parseFloat(minOverlapInput.value);
+
+            if (isNaN(value)) {
+              alert('Inserisci un numero valido');
+              return;
+            }
+
+            // Converti il valore in formato decimale
+            const decimalValue = value / 100;
+
+            if (decimalValue < 0 || decimalValue > 1) {
+              alert('Il valore deve essere compreso tra 0 e 100');
+              return;
+            }
+
+            // Mostra la finestra di conferma
+            const currentValue = parseFloat(minOverlapInput.getAttribute('data-current-value') || '0') * 100;
+            showConfirmModal(currentValue, value);
+            pendingUpdate = decimalValue;
+          }
+
+          async function updateMinOverlapValue(decimalValue) {
+            const token = getToken();
+            try {
+              const response = await fetch(`/admin/update-min-overlap?token=${token}`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ min_overlap: decimalValue })
+              });
+
+              if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Errore nell\'aggiornamento del valore');
+              }
+
+              const data = await response.json();
+              alert('Valore MIN_OVERLAP aggiornato con successo!');
+              // Aggiorna il valore visualizzato mantenendo il formato percentuale
+              const minOverlapInput = document.getElementById('minOverlap');
+              minOverlapInput.value = Math.round(decimalValue * 100);
+              minOverlapInput.setAttribute('data-current-value', decimalValue);
+              document.getElementById('currentMinOverlap').textContent = (decimalValue * 100).toFixed(0) + '%';
+            } catch (error) {
+              console.error('Errore:', error);
+              alert(error.message || 'Errore nell\'aggiornamento del valore');
+            }
+          }
+
+          async function loadMinOverlap() {
+            const token = getToken();
+            const res = await fetch(`/admin/get-min-overlap?token=${token}`);
+            if (res.ok) {
+              const data = await res.json();
+              document.getElementById('currentMinOverlap').textContent = (data.min_overlap * 100).toFixed(0) + '%';
+            } else {
+              document.getElementById('currentMinOverlap').textContent = '-';
+            }
+          }
+
+          function showReindexModal() {
+            document.getElementById('reindexConfirmModal').classList.remove('hidden');
+          }
+
+          function closeReindexModal() {
+            document.getElementById('reindexConfirmModal').classList.add('hidden');
+          }
+
+          function showReindexSpinner() {
+            document.getElementById('reindexSpinnerModal').classList.remove('hidden');
+          }
+
+          function hideReindexSpinner() {
+            document.getElementById('reindexSpinnerModal').classList.add('hidden');
+          }
+
+          async function confirmReindex() {
+            const token = getToken();
+            try {
+              closeReindexModal();
+              showReindexSpinner();
+
+              const response = await fetch(`/admin/reindex?token=${token}`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                }
+              });
+
+              const data = await response.json();
+
+              if (!response.ok) {
+                throw new Error(data.error || 'Errore nella reindicizzazione');
+              }
+
+              hideReindexSpinner();
+              alert(data.message || 'Reindicizzazione completata con successo!');
+            } catch (error) {
+              console.error('Errore:', error);
+              hideReindexSpinner();
+              alert(error.message || 'Errore nella reindicizzazione');
+            }
+          }
+
+          function toggleSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            const icon = document.getElementById(sectionId + 'Icon');
+            if (section.style.display === 'none') {
+              section.style.display = 'block';
+              icon.classList.remove('rotate-180');
+            } else {
+              section.style.display = 'none';
+              icon.classList.add('rotate-180');
+            }
+          }
+
+          async function deleteDocument(filename) {
+            if (!confirm('Sei sicuro di voler eliminare questo documento?\n\n⚠️ Ricorda: dopo l\'eliminazione dovrai eseguire la reindicizzazione per aggiornare l\'indice.')) return;
+            const token = getToken();
+            try {
+              const response = await fetch(`/admin/delete-document?token=${token}`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ filename })
+              });
+              if (!response.ok) {
+                throw new Error('Errore nell\'eliminazione del documento');
+              }
+              window.location.reload();
+            } catch (error) {
+              console.error('Errore:', error);
+              alert(error.message || 'Errore nell\'eliminazione del documento');
+            }
+          }
+
+          async function deleteLink(link) {
+            if (!confirm('Sei sicuro di voler eliminare questo link?\n\n⚠️ Ricorda: dopo l\'eliminazione dovrai eseguire la reindicizzazione per aggiornare l\'indice.')) return;
+            const token = getToken();
+            try {
+              const response = await fetch(`/admin/delete-link?token=${token}`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ link })
+              });
+              if (!response.ok) {
+                throw new Error('Errore nell\'eliminazione del link');
+              }
+              window.location.reload();
+            } catch (error) {
+              console.error('Errore:', error);
+              alert(error.message || 'Errore nell\'eliminazione del link');
+            }
+          }
+
+          // Carica il valore attuale all'avvio
+          document.addEventListener('DOMContentLoaded', () => {
+            loadMinOverlap();
+          });
+
+          // 1. Definisco una funzione globale per ottenere il token
+          function getToken() {
+            return new URLSearchParams(window.location.search).get('token') || '';
+          }
+
+          function showCorrectionModal(query, answer) {
+            document.getElementById('correctionQuery').value = query;
+            document.getElementById('correctionAnswer').value = '';
+            var box = document.getElementById('originalAnswerBox');
+            if (answer) {
+              box.textContent = answer;
+              box.style.display = '';
+            } else {
+              box.textContent = '';
+              box.style.display = 'none';
+            }
+            document.getElementById('correctionModal').classList.remove('hidden');
+          }
+
+          function closeCorrectionModal() {
+            document.getElementById('correctionModal').classList.add('hidden');
+          }
+
+          async function submitCorrection() {
+            const query = document.getElementById('correctionQuery').value;
+            const corrected_answer = document.getElementById('correctionAnswer').value;
+            const token = getToken();
+            const res = await fetch(`/admin/correct-answer?token=${token}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ query, corrected_answer })
+            });
+            if (res.ok) {
+              alert('Correzione salvata!');
+              closeCorrectionModal();
+              loadCorrections();
+            } else {
+              alert('Errore nel salvataggio della correzione');
+            }
+          }
+
+          async function loadCorrections() {
+            const token = getToken();
+            const res = await fetch(`/admin/get-corrections?token=${token}`);
+            if (res.ok) {
+              const data = await res.json();
+              const list = document.getElementById('correctionsList');
+              list.innerHTML = '';
+              for (const c of data.corrections) {
+                const li = document.createElement('li');
+                li.className = "flex justify-between items-center";
+                li.innerHTML = `<span><b>${c.query}</b>: ${c.corrected_answer}</span>
+                  <span class='flex gap-2 ml-2'>
+                    <button data-query="${encodeURIComponent(c.query)}" data-answer="${encodeURIComponent(c.corrected_answer)}" onclick="editCorrectionFromButton(this)" title="Modifica" class="text-blue-600 hover:text-blue-800 text-lg">✏️</button>
+                    <button onclick="deleteCorrection('${c.query.replace(/'/g, "\\'")}')" title="Elimina" class="text-red-600 hover:text-red-800 text-lg">🗑️</button>
+                  </span>`;
+                list.appendChild(li);
+              }
+            }
+          }
+
+          async function deleteCorrection(query) {
+            const token = getToken();
+            if (!confirm('Vuoi davvero eliminare questa correzione?')) return;
+            const res = await fetch(`/admin/delete-correction?token=${token}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ query })
+            });
+            if (res.ok) {
+              alert('Correzione eliminata!');
+              loadCorrections();
+            } else {
+              alert('Errore nell\'eliminazione');
+            }
+          }
+
+          function editCorrection(query, answer) {
+            document.getElementById('correctionQuery').value = query;
+            document.getElementById('correctionAnswer').value = answer;
+            document.getElementById('correctionModal').classList.remove('hidden');
+          }
+
+          function editCorrectionFromButton(btn) {
+            const query = decodeURIComponent(btn.getAttribute('data-query'));
+            const answer = decodeURIComponent(btn.getAttribute('data-answer'));
+            editCorrection(query, answer);
+          }
+
+          document.addEventListener('DOMContentLoaded', loadCorrections);
+
+          function showFullAnswer(answer) {
+            document.getElementById('fullAnswerContent').textContent = answer;
+            document.getElementById('fullAnswerModal').classList.remove('hidden');
+          }
+
+          function closeFullAnswerModal() {
+            document.getElementById('fullAnswerModal').classList.add('hidden');
+          }
+        </script>
+        {% endif %}
+      </div>
+</body>
+
+</html>

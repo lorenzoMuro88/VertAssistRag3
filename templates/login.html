@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login - RAG Assistant</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#2563eb',
+            background: '#f9fafb'
+          },
+          borderRadius: {
+            lg: '1rem'
+          },
+          boxShadow: {
+            soft: '0 2px 8px rgba(0,0,0,0.05)'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .mat-input {
+      border: none;
+      border-bottom: 2px solid #cfd8dc;
+      background: transparent;
+      border-radius: 0;
+      outline: none;
+      transition: border-color 0.2s;
+      box-shadow: none !important;
+    }
+
+    .mat-input:focus {
+      border-bottom: 2px solid #1976d2;
+      background: transparent;
+    }
+
+    .mat-input:disabled {
+      background: transparent;
+      color: #aaa;
+    }
+
+    .mat-btn {
+      background: #1976d2;
+      color: #fff;
+      font-weight: 500;
+      border: none;
+      border-radius: 3px;
+      transition: box-shadow 0.2s, background 0.2s;
+      box-shadow: 0 1px 3px 0 rgba(25, 118, 210, 0.08);
+    }
+
+    .mat-btn:hover,
+    .mat-btn:focus {
+      background: #1565c0;
+      box-shadow: 0 3px 12px 0 rgba(25, 118, 210, 0.16);
+    }
+
+    .mat-btn-alt {
+      background: #fff;
+      color: #1976d2;
+      border: 1px solid #1976d2;
+      border-radius: 3px;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .mat-btn-alt:hover,
+    .mat-btn-alt:focus {
+      background: #e3f2fd;
+      color: #0d47a1;
+    }
+
+    ::-webkit-scrollbar {
+      width: 7px;
+      background: #e3e6ea;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #b0bec5;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+
+<body class="bg-background min-h-screen antialiased text-gray-800 flex items-center justify-center px-4">
+  <main class="bg-white shadow-soft rounded-lg w-full max-w-md p-8">
+    <h1 class="text-3xl font-bold text-primary text-center mb-8">Login</h1>
+    <form method="POST" class="space-y-6">
+      <div>
+        <label class="block text-sm font-medium mb-1 text-gray-700">Username</label>
+        <input name="username" type="text" required
+          class="block w-full px-4 py-2 rounded-lg border border-gray-300 shadow-sm text-sm"
+          placeholder="Inserisci il tuo username" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1 text-gray-700">Password</label>
+        <input name="password" type="password" required
+          class="block w-full px-4 py-2 rounded-lg border border-gray-300 shadow-sm text-sm"
+          placeholder="Inserisci la tua password" />
+      </div>
+      <button type="submit"
+        class="w-full px-4 py-2 bg-primary text-white rounded-lg text-sm hover:bg-blue-600 transition-colors">
+        Accedi
+      </button>
+    </form>
+    <p class="mt-6 text-sm text-center text-gray-600">
+      Non hai un account?
+      <a href="/register" class="text-primary hover:underline font-medium">Registrati</a>
+    </p>
+  </main>
+</body>
+
+</html>

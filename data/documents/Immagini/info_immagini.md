@@ -1,0 +1,4 @@
+- Questa è la foto della reception. Immagine a questo link: https://rag-assistant.fly.dev/static/images/foto_reception.jpeg  
+- Questa è la foto del pulsante della sbarra. Immagine a questo link: https://rag-assistant.fly.dev/static/images/foto_pulsante_sbarra.jpeg  
+- Questa è la foto dei bidoni. Immagine a questo link: https://rag-assistant.fly.dev/static/images/foto_bidoni.png  
+- Questa è la foto delle chiavi e dei telecomandi. Immagine a questo link: https://rag-assistant.fly.dev/static/images/foto_chiavi_telecomandi.png  

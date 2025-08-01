@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Analisi Immagini - Assistenza Ospiti</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563eb',
+                        background: '#f9fafb'
+                    },
+                    borderRadius: {
+                        lg: '1rem'
+                    },
+                    boxShadow: {
+                        soft: '0 2px 8px rgba(0,0,0,0.05)'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .mat-input {
+            border: none;
+            border-bottom: 2px solid #cfd8dc;
+            background: transparent;
+            border-radius: 0;
+            outline: none;
+            transition: border-color 0.2s;
+            box-shadow: none !important;
+        }
+
+        .mat-input:focus {
+            border-bottom: 2px solid #1976d2;
+            background: transparent;
+        }
+
+        .mat-btn {
+            background: #1976d2;
+            color: #fff;
+            font-weight: 500;
+            border: none;
+            border-radius: 3px;
+            transition: box-shadow 0.2s, background 0.2s;
+            box-shadow: 0 1px 3px 0 rgba(25, 118, 210, 0.08);
+        }
+
+        .mat-btn:hover,
+        .mat-btn:focus {
+            background: #1565c0;
+            box-shadow: 0 3px 12px 0 rgba(25, 118, 210, 0.16);
+        }
+
+        input[type="file"].mat-file {
+            border: none;
+            padding: 0.5rem 0 0.25rem 0;
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar {
+            width: 7px;
+            background: #e3e6ea;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #b0bec5;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body class="bg-background min-h-screen antialiased text-gray-800">
+    <div class="max-w-lg mx-auto p-6">
+        <div class="flex justify-between items-center mb-4">
+            <a href="/" class="text-primary hover:underline text-sm">← Torna alla chat</a>
+            <select id="langSelect" class="border rounded px-2 py-1 text-sm">
+                <option value="it">Italiano</option>
+                <option value="en">English</option>
+                <option value="fr">Français</option>
+            </select>
+        </div>
+
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-primary">Analisi Immagini</h1>
+            <p class="text-sm text-gray-500">Carica un'immagine per ottenere una descrizione dettagliata</p>
+        </header>
+
+        <section class="mb-6">
+            <div class="bg-white border rounded-lg shadow-soft p-4">
+                <form id="imageForm" class="space-y-4">
+                    <div>
+                        <label for="imageInput" class="block text-sm font-medium mb-2">Seleziona un'immagine</label>
+                        <input type="file" id="imageInput" accept="image/*"
+                            class="w-full px-4 py-2 rounded-lg border border-gray-300 shadow-sm text-sm" />
+                    </div>
+
+                    <div>
+                        <label for="imagePrompt" class="block text-sm font-medium mb-2">Prompt (opzionale)</label>
+                        <input type="text" id="imagePrompt" placeholder="Cosa vuoi sapere dell'immagine?"
+                            class="w-full px-4 py-2 rounded-lg border border-gray-300 shadow-sm text-sm" />
+                    </div>
+
+                    <button type="submit" id="analyzeBtn"
+                        class="w-full px-4 py-2 bg-primary text-white rounded-lg text-sm hover:bg-blue-600 transition-colors">
+                        Analizza Immagine
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <div id="loadingSpinner" class="text-center my-6 hidden">
+            <div class="flex justify-center items-center gap-2 text-sm text-gray-500">
+                <svg class="animate-spin h-5 w-5 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none"
+                    viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                </svg>
+                <span>Analisi in corso...</span>
+            </div>
+        </div>
+
+        <section id="results" class="hidden">
+            <div class="bg-white border rounded-lg shadow-soft p-4">
+                <h3 class="text-sm font-semibold text-gray-600 mb-2">Risultato</h3>
+                <div id="resultContent" class="text-base leading-relaxed text-gray-800">
+                    <div id="preview-container" class="mb-4"></div>
+                    <div id="text-container" class="prose max-w-none"></div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        let fullTextBuffer = "";
+        let typingTimer = null;
+
+        async function analyzeImage(event) {
+            event.preventDefault();
+
+            const input = document.getElementById("imageInput");
+            const prompt = document.getElementById("imagePrompt")?.value.trim();
+            const analyzeBtn = document.getElementById("analyzeBtn");
+            const loadingSpinner = document.getElementById("loadingSpinner");
+            const resultBox = document.getElementById("results");
+            const resultContent = document.getElementById("resultContent");
+            const previewContainer = document.getElementById("preview-container");
+
+            if (!input?.files || input.files.length === 0) {
+                alert("Seleziona un'immagine.");
+                return;
+            }
+
+            // Reset state
+            fullTextBuffer = "";
+            analyzeBtn.disabled = true;
+            analyzeBtn.classList.add("opacity-50", "cursor-not-allowed");
+            resultBox.classList.add("hidden");
+            loadingSpinner.classList.remove("hidden");
+            resultContent.innerHTML = `
+        <div id="preview-container" class="mb-4"></div>
+        <div id="text-container" class="prose max-w-none"></div>
+      `;
+
+            // Show image preview
+            const file = input.files[0];
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                previewContainer.innerHTML = `
+          <img src="${e.target.result}" class="mx-auto rounded shadow max-w-xs" alt="Anteprima">
+        `;
+            };
+            reader.readAsDataURL(file);
+
+            try {
+                const formData = new FormData();
+                formData.append("file", file);
+                if (prompt) formData.append("prompt", prompt);
+
+                const response = await fetch("/analyze-image", {
+                    method: "POST",
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error("Errore nell'analisi dell'immagine");
+                }
+
+                const data = await response.json();
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                fullTextBuffer = data.result;
+                resultBox.classList.remove("hidden");
+                displayResponse(fullTextBuffer);
+
+            } catch (error) {
+                console.error("Errore:", error);
+                resultContent.innerHTML = `<div class="text-red-500">${error.message || "Si è verificato un errore durante l'analisi"}</div>`;
+                resultBox.classList.remove("hidden");
+            } finally {
+                analyzeBtn.disabled = false;
+                analyzeBtn.classList.remove("opacity-50", "cursor-not-allowed");
+                loadingSpinner.classList.add("hidden");
+            }
+        }
+
+        function displayResponse(text) {
+            const textContainer = document.getElementById("text-container");
+            if (textContainer) {
+                textContainer.innerHTML = `<div class="text-sm text-gray-800">${text}</div>`;
+            }
+        }
+
+        document.getElementById("imageForm").addEventListener("submit", analyzeImage);
+
+        async function setLanguage(lang) {
+            localStorage.setItem('lang', lang);
+            const res = await fetch(`/static/lang/lang.${lang}.json`);
+            const t = await res.json();
+            document.querySelector('h1').textContent = t.imageAnalysisTitle || 'Analisi Immagini';
+            document.querySelector('header p').textContent = t.imageAnalysisSubtitle || 'Carica un\'immagine per ottenere una descrizione dettagliata';
+            document.querySelector('label[for="imageInput"]').textContent = t.selectImage || 'Seleziona un\'immagine';
+            document.querySelector('label[for="imagePrompt"]').textContent = t.promptLabel || 'Prompt (opzionale)';
+            document.getElementById('imagePrompt').placeholder = t.promptPlaceholder || 'Cosa vuoi sapere dell\'immagine?';
+            document.getElementById('analyzeBtn').textContent = t.analyzeButton || 'Analizza Immagine';
+            document.querySelector('#results h3').textContent = t.result || 'Risultato';
+            document.querySelector('#loadingSpinner span').textContent = t.analyzing || 'Analisi in corso...';
+        }
+
+        const lang = localStorage.getItem('lang') || 'it';
+        document.getElementById('langSelect').value = lang;
+        setLanguage(lang);
+        document.getElementById('langSelect').addEventListener('change', (e) => {
+            setLanguage(e.target.value);
+        });
+    </script>
+</body>
+
+</html>
