@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - VertAssistRag3</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#1F2937'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div class="max-w-md w-full space-y-8">
+        <div class="bg-white py-8 px-6 shadow-lg rounded-lg">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">
+                    🔐 Admin Access
+                </h2>
+                <p class="text-gray-600">
+                    VertAssistRag3 - Sistema di Gestione
+                </p>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm" class="space-y-6">
+                <div>
+                    <label for="token" class="block text-sm font-medium text-gray-700 mb-2">
+                        Token di Accesso
+                    </label>
+                    <input type="password" id="token" name="token" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                        placeholder="Inserisci il token di accesso">
+                </div>
+
+                <div>
+                    <button type="submit"
+                        class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors">
+                        🔑 Accedi
+                    </button>
+                </div>
+            </form>
+
+            <!-- Error Message -->
+            <div id="errorMessage" class="hidden mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                <p id="errorText"></p>
+            </div>
+
+            <!-- Info -->
+            <div class="mt-6 text-center">
+                <p class="text-xs text-gray-500">
+                    💡 Inserisci il token di accesso per entrare nel pannello amministrativo
+                </p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center">
+            <a href="/" class="text-sm text-primary hover:text-blue-700 transition-colors">
+                ← Torna all'applicazione
+            </a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const token = document.getElementById('token').value.trim();
+            if (!token) {
+                showError('Inserisci un token valido');
+                return;
+            }
+
+            // Nascondi eventuali errori precedenti
+            hideError();
+
+            // Prova ad accedere con il token
+            const url = `/admin?token=${encodeURIComponent(token)}`;
+
+            // Reindirizza alla pagina admin con il token
+            window.location.href = url;
+        });
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            errorText.textContent = message;
+            errorDiv.classList.remove('hidden');
+        }
+
+        function hideError() {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.classList.add('hidden');
+        }
+
+        // Controlla se c'è un errore nell'URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const error = urlParams.get('error');
+        if (error) {
+            showError(decodeURIComponent(error));
+        }
+    </script>
+</body>
+
+</html>

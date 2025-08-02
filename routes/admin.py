@@ -3,13 +3,14 @@ import json
 import os
 import subprocess
 from werkzeug.utils import secure_filename
+from config import config
 
 admin_bp = Blueprint("admin", __name__, template_folder="../templates")
 
 # Configurazione percorsi
 IS_PRODUCTION = os.getenv("FLASK_ENV") != "development"
 BASE_DIR = "/data" if IS_PRODUCTION else "data"
-ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "admin123")
+ADMIN_TOKEN = config.ADMIN_TOKEN
 LOG_FILE = os.path.join(BASE_DIR, "logs", "queries.jsonl")
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "documents")
 URLS_FILE = os.path.join(BASE_DIR, "urls.txt")
@@ -27,8 +28,19 @@ for file_path in [LOG_FILE, URLS_FILE]:
             pass
 
 def check_auth():
+    # Controlla il token nell'URL (metodo legacy)
     token = request.args.get("token")
-    return token and token == ADMIN_TOKEN
+    if token and token == ADMIN_TOKEN:
+        return True
+    
+    # Controlla l'header Authorization (metodo moderno)
+    auth_header = request.headers.get("Authorization")
+    if auth_header and auth_header.startswith("Bearer "):
+        token = auth_header[7:]  # Rimuovi "Bearer "
+        if token == ADMIN_TOKEN:
+            return True
+    
+    return False
 
 def get_documents():
     documents = []
@@ -98,7 +110,11 @@ def save_correction(query, corrected_answer):
 @admin_bp.route("/admin", endpoint="admin_dashboard")
 def admin_dashboard():
     if not check_auth():
-        return render_template("admin.html")
+        # Se è una richiesta AJAX/API, restituisci JSON
+        if request.headers.get('Content-Type') == 'application/json' or request.headers.get('Authorization'):
+            return jsonify({'error': 'Unauthorized'}), 401
+        # Altrimenti mostra la pagina di login
+        return render_template("admin_login.html")
 
     log_entries = []
     if os.path.exists(LOG_FILE):
@@ -178,7 +194,7 @@ def delete_link():
 @admin_bp.route("/admin/chunks", endpoint="admin_chunks")
 def admin_chunks():
     if not check_auth():
-        return render_template("admin_chunks.html")
+        return jsonify({'error': 'Unauthorized'}), 401
     chunks = get_chunks()
     return render_template("admin_chunks.html", chunks=chunks)
 

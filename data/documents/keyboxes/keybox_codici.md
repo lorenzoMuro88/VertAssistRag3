@@ -17,3 +17,13 @@ Questa tabella elenca in modo univoco i codici keybox associati a ciascuna stanz
 - Il campo **"Codice Keybox"** contiene il codice necessario per aprire il keybox associato alla rispettiva stanza.
 - Le diciture originali come "Keybox stanza Hb X" sono state normalizzate per migliorare la precisione del matching tra entità.
 - Il termine "stanza" è da intendersi come sinonimo funzionale di "houseboat" nel contesto di questa mappatura.
+
+### Varianti di ricerca riconosciute:
+- "codice stanza Hb X"
+- "codice camera Hb X" 
+- "codice houseboat Hb X"
+- "chiave stanza Hb X"
+- "accesso stanza Hb X"
+- "codice keybox Hb X"
+- "codice per stanza Hb X"
+- "codice per houseboat Hb X"

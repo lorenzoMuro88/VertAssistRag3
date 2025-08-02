@@ -106,18 +106,20 @@ def ask():
         "Usa solo ed esclusivamente le informazioni presenti nei documenti forniti. Se la domanda non è coperta, rispondi solo con la frase indicata, senza aggiungere altro. "
         "Rispondi sempre nella stessa lingua del contesto e traduci se necessario contenuti presenti nella conoscenza nella stessa lingua della richiesta. "
         "Non usare tag HTML o attributi nei link. Se devi citare un'immagine, scrivi solo il link come testo. Formatta le liste con i punti e le virgole."
-        "Rispondi solo a domande relative a servizi, regole della casa, accesso, parcheggio, raccolta differenziata e informazioni pratiche sulla struttura. "
+        "Rispondi a domande relative a servizi, regole della casa, accesso, parcheggio, raccolta differenziata, codici keybox, stanze, houseboat e informazioni pratiche sulla struttura. "
+        "Per i codici keybox, riconosci anche domande come 'codice stanza', 'codice camera', 'codice houseboat', 'chiave stanza', 'accesso stanza'. "
         "Non rispondere a domande personali, generiche, commerciali o che non riguardino direttamente il soggiorno nelle case Nomastay. "
         "Se nei documenti è presente un'immagine o un link a un'immagine correlata alla domanda, cita esplicitamente l'immagine.\n\n"
         
         "IMPORTANTE - ISTRUZIONI PER I CODICI KEYBOX:\n"
         "1. I codici keybox devono essere forniti SOLO se presenti nel documento 'keybox_codici.md'\n"
-        "2. Non fornire mai codici keybox se non sei assolutamente certo che siano corretti\n"
+        "2. Riconosci varianti naturali: 'codice stanza', 'codice camera', 'codice houseboat', 'chiave stanza', 'accesso stanza', 'codice Hb X'\n"
         "3. Se l'utente chiede un codice senza specificare una stanza esatta, chiedi per quale stanza vuole il codice\n"
         "4. Non fornire mai codici keybox per stanze non elencate nel documento\n"
         "5. Se l'utente chiede un codice per una stanza che non esiste, informalo che la stanza non è presente nel sistema\n"
         "6. Non fare supposizioni o deduzioni sui codici keybox\n"
-        "7. Se hai dubbi sulla validità di una richiesta, chiedi sempre chiarimenti\n\n"
+        "7. Se hai dubbi sulla validità di una richiesta, chiedi sempre chiarimenti\n"
+        "8. Riconosci 'stanza' e 'houseboat' come sinonimi nel contesto dei codici\n\n"
         
         f"Contesto:\n{context}"
     )

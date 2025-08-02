@@ -8,6 +8,7 @@ beautifulsoup4        # parsing HTML da web
 requests              # download pagine web
 flask-cors            # gestione CORS
 flask-limiter         # rate limiting
+bcrypt                # hashing sicuro delle password
 
 # Development tools
 black                 # formattatore di codice

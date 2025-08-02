@@ -2,6 +2,7 @@ from flask import Blueprint, request, render_template, redirect, url_for, sessio
 import os
 import json
 import hashlib
+from config import config
 
 USERS_DB = "users.json"
 
@@ -32,10 +33,10 @@ def login():
         users = load_users()
 
         # Accesso amministratore
-        if username == os.getenv("ADMIN_USER") and password == os.getenv("ADMIN_PASS"):
+        if username == config.ADMIN_USER and password == config.ADMIN_PASS:
             session["authenticated"] = True
             session["role"] = "admin"
-            return redirect(url_for("admin.admin_dashboard", token=os.getenv("ADMIN_TOKEN", "admin123")))
+            return redirect(url_for("admin.admin_dashboard", token=config.ADMIN_TOKEN))
 
         # Accesso utente registrato
         user = users.get(username)

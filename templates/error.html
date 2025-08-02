@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Errore {{ code }} - VertAssistRag3</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-50 min-h-screen flex items-center justify-center">
+    <div class="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
+        <div class="text-center">
+            <div class="text-6xl font-bold text-red-500 mb-4">{{ code }}</div>
+            <h1 class="text-2xl font-semibold text-gray-800 mb-4">{{ error }}</h1>
+            <p class="text-gray-600 mb-8">
+                {% if code == 404 %}
+                La pagina che stai cercando non esiste.
+                {% elif code == 401 %}
+                Devi effettuare il login per accedere a questa pagina.
+                {% elif code == 403 %}
+                Non hai i permessi per accedere a questa risorsa.
+                {% elif code == 429 %}
+                Hai superato il limite di richieste. Riprova tra qualche minuto.
+                {% elif code == 500 %}
+                Si è verificato un errore interno del server.
+                {% else %}
+                Si è verificato un errore imprevisto.
+                {% endif %}
+            </p>
+            <div class="space-y-3">
+                <a href="{{ url_for('core.home') }}"
+                    class="block w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                    Torna alla Home
+                </a>
+                <a href="{{ url_for('auth.login') }}"
+                    class="block w-full bg-gray-200 text-gray-800 py-3 px-4 rounded-lg hover:bg-gray-300 transition-colors">
+                    Accedi
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

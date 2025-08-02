@@ -38,4 +38,20 @@ ENV/
 logs/
 *.log
 *.faiss
-*.jsonl 
+*.jsonl
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Temporary files
+*.tmp
+*.temp 
